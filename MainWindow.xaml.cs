@@ -66,28 +66,6 @@ namespace wirstADO.net
                 sqlCommand.ExecuteNonQuery();
                 CloseConnection();
             }
-            public List<StudentGradeEntity> ExecuteReaderUsers()
-            {
-                string query = "select * from [StudentGrade]";
-                List<StudentGradeEntity> result = new List<StudentGradeEntity>();
-                using (SqlConnection _sqlConnection = new SqlConnection(ConnectionString))
-                {
-                    if (_sqlConnection.State == System.Data.ConnectionState.Closed)
-                    {
-                        _sqlConnection.OpenAsync();
-                    }
-                    SqlCommand sqlCommand = new SqlCommand(query, _sqlConnection);
-                    using (SqlDataReader reader = sqlCommand.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            result.Add(new StudentGradeEntity(reader[1].ToString(), reader[2].ToString(), int.Parse(reader[3].ToString()), reader[4].ToString(), int.Parse(reader[5].ToString()), reader[6].ToString(), int.Parse(reader[7].ToString())));
-                        }
-                    }
-                }
-                CloseConnection();
-                return result;
-            }
             public List<NPCforString> ExecuteReaderString(string query)
             {
                 List<NPCforString> result = new List<NPCforString>();
@@ -152,6 +130,27 @@ namespace wirstADO.net
                 CloseConnection();
                 return result;
             }
+            public List<FAV> ExecuteReaderFAV(string query)
+            {
+                List<FAV> result = new List<FAV>();
+                using (SqlConnection _sqlConnection = new SqlConnection(ConnectionString))
+                {
+                    if (_sqlConnection.State == System.Data.ConnectionState.Closed)
+                    {
+                        _sqlConnection.OpenAsync();
+                    }
+                    SqlCommand sqlCommand = new SqlCommand(query, _sqlConnection);
+                    using (SqlDataReader reader = sqlCommand.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            result.Add(new FAV(reader.GetString(1), reader.GetString(2), reader.GetString(3), reader.GetInt32(4)));
+                        }
+                    }
+                }
+                CloseConnection();
+                return result;
+            }
         }
     }
 
@@ -164,46 +163,74 @@ namespace wirstADO.net
         public MainWindow()
         {
             InitializeComponent();
-            database = new DatabaseManager(@"Data Source=DESKTOP-OF66R01\SQLEXPRESS;Initial Catalog=StudentGrades;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
+            database = new DatabaseManager(@"Data Source=DESKTOP-OF66R01\SQLEXPRESS;Initial Catalog=FruitsAndVegetables;Integrated Security=True;Connect Timeout=30;Encrypt=False;Trust Server Certificate=False;Application Intent=ReadWrite;Multi Subnet Failover=False");
             if (database.OpenConnection())
-            {            
+            {
                 MessageBox.Show("Success");
             }
             else
             {
                 MessageBox.Show("Error");
             }
-            // 1
-            //List<StudentGradeEntity> result = database.ExecuteReaderUsers();
+            // 1.1
 
-            //List<NPCforString> result = database.ExecuteReaderString("Select Name from StudentGrade");
+            // Відображення всієї інформації з таблиці овочів і фруктів.
+            //List<FAV> result = database.ExecuteReaderFAV("select * from FAV");
 
-            //List<NPCforString> result = database.ExecuteReaderString("Select Name from StudentGrade where MinGrade > 8");
+            // Відображення усіх назв овочів і фруктів.
+            //List<NPCforString> result = database.ExecuteReaderString("select Name from FAV");
 
-            //List<NPCforString> result = database.ExecuteReaderString("Select [MinGradeLesson] from StudentGrade group by MinGradeLesson");
+            // Відображення усіх кольорів.
+            List<NPCforString> result = database.ExecuteReaderString("select Color from FAV");
 
-            // Показати кількість студентів у кожній групі.
-            //List<NPCforInt> result = database.ExecuteReaderIntList("select count(Name) from StudentGrade group by [Group]");
+            // 2.2
 
-            // Показати середню оцінку групи
-            List<NPCforInt> result = database.ExecuteReaderIntList("select avg([AverageGrade]) from StudentGrade group by [Group]");
+            // Показати кількість овочів і фруктів кожного кольору.
+            //List<NPCforInt> result = database.ExecuteReaderIntList("select count(*) from FAV group by color");
+
+            // Показати овочі та фрукти з калорійністю нижче вказаної.
+            //List<FAV> result = database.ExecuteReaderFAV("select * from FAV where Callories < 400");
+
+            // Показати овочі та фрукти з калорійністю вище вказаної.
+            //List<FAV> result = database.ExecuteReaderFAV("select * from FAV where Callories > 400");
+
+            // Показати овочі та фрукти з калорійністю у вказаному діапазоні.
+            //List<FAV> result = database.ExecuteReaderFAV("select * from FAV where Callories between 100 and 300");
+
+            // Показати усі овочі та фрукти жовтого або червоного кольору
+            //List<FAV> result = database.ExecuteReaderFAV("select * from FAV where Color = \'Yellow\' or Color = \'Red\'");
+
 
             DGMain.ItemsSource = result;
 
-            // 2
+
+
+
+
             //int result;
 
-            // Показати мінімальну середню оцінку.
-            //result = database.ExecuteReaderInt("select min([AverageGrade]) from StudentGrade");
+            // 1.2
 
-            // Показати максимальну середню оцінку.
-            //result = database.ExecuteReaderInt("select max([AverageGrade]) from StudentGrade");
+            // Показати максимальну калорійність.
+            //result = database.ExecuteReaderInt("select max(Callories) from FAV");
 
-            // Показати кількість студентів з мінімальною середньою оцінкою з математики.
-            //result = database.ExecuteReaderInt("select count(Id) from StudentGrade where [MinGradeLesson] = \'Algebra\'");
+            // Показати мінімальну калорійність.
+            //result = database.ExecuteReaderInt("select min(Callories) from FAV");
 
-            // Показати кількість студентів, в яких максимальна середня оцінка з математики.
-            //result = database.ExecuteReaderInt("select count(Id) from StudentGrade where [MaxGradeLesson] = \'Algebra\'");
+            // Показати середню калорійність
+            //result = database.ExecuteReaderInt("select avg(Callories) from FAV");
+
+            // 2.1
+
+            // Показати кількість овочів.
+            //result = database.ExecuteReaderInt("select count(*) from FAV where Type = \'Vegetable\'");
+
+            // Показати кількість фруктів.
+            //result = database.ExecuteReaderInt("select count(*) from FAV where Type = \'Fruit\'");
+
+            // Показати кількість овочів і фруктів заданого кольору.
+            //result = database.ExecuteReaderInt("select count(*) from FAV where Color = \'Yellow\'");
+
 
             //LInfo.Content = result.ToString();
 
